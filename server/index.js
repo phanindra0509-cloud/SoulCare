@@ -69,63 +69,8 @@ Key Guidelines:
   } catch (error) {
     console.warn("OpenAI connection failed or unconfigured:", error.message);
     
-    // Attempt to use the Hugging Face Dataset endpoint as the AI Assistant backend
-    try {
-      const hfDatasetUrl = "https://datasets-server.huggingface.co/rows?dataset=lavita%2FChatDoctor-HealthCareMagic-100k&config=default&split=train&offset=0&length=100";
-      
-      const hfToken = process.env.VITE_HF_TOKEN; 
-      const headers = hfToken ? { "Authorization": `Bearer ${hfToken}` } : {};
-
-      const hfResponse = await fetch(hfDatasetUrl, { headers });
-      
-      if (hfResponse.ok) {
-        const data = await hfResponse.json();
-        if (data && data.rows && data.rows.length > 0) {
-          // Find a random response from the dataset's rows
-          const randomRow = data.rows[Math.floor(Math.random() * data.rows.length)];
-          
-          // Map to the possible output fields in the dataset
-          const botFallback = randomRow.row.output || randomRow.row.response || randomRow.row.answer || "I reviewed the dataset but couldn't find a direct response text.";
-          
-          return res.json({ response: botFallback });
-        }
-      } else {
-        console.warn("Failed to fetch from Hugging Face API:", await hfResponse.text());
-      }
-    } catch (datasetError) {
-      console.warn("Dataset API request failed:", datasetError);
-    }
-
-    // Final fallback if both APIs fail
-    // Getting the last user message
-    const lastMessage = messages[messages.length - 1];
-    const textLower = (lastMessage?.text || "").toLowerCase();
-    let fallbackResponse = "";
-
-    if (textLower.includes('anxious') || textLower.includes('panic') || textLower.includes('scared')) {
-      const anxiousResponses = [
-        "I can see you might be experiencing a heightened state of anxiety right now. Please sit down, try to plant your feet firmly on the ground, and follow the guided breathing exercise on your dashboard.",
-        "It sounds like things feel out of control at the moment. Take a deep breath with me. You are safe here. Can you tell me what you are physically feeling right now?",
-        "Panic can be incredibly overwhelming. Let's focus on grounding. Can you look around the room and name three things you can see, two things you can touch, and one thing you can hear?"
-      ];
-      fallbackResponse = anxiousResponses[Math.floor(Math.random() * anxiousResponses.length)];
-    } else if (textLower.includes('sad') || textLower.includes('depressed') || textLower.includes('down')) {
-      const sadResponses = [
-        "I am so sorry you are feeling down. Please remember that taking things one step at a time is completely okay. Your wellness is the priority.",
-        "It takes courage to share that you're feeling down. I'm listening. Is there something specific that triggered these feelings today?",
-        "Feelings of heaviness and sadness are deeply exhausting. I am here to support you unconditionally. Try to be gentle with yourself today."
-      ];
-      fallbackResponse = sadResponses[Math.floor(Math.random() * sadResponses.length)];
-    } else {
-      const generalResponses = [
-        "I hear you, and it's completely understandable to feel that way. Please feel free to share more, or we can practice some grounding exercises together.",
-        "Thank you for sharing that with me. Acknowledging your feelings is a huge step in the right direction. How long have you been feeling like this?",
-        "I understand. Sometimes talking through these moments makes a big difference. I am entirely focused on you. What would feel most helpful right now?"
-      ];
-      fallbackResponse = generalResponses[Math.floor(Math.random() * generalResponses.length)];
-    }
-
-    return res.json({ response: fallbackResponse });
+    // Return the actual error message to the frontend for debugging
+    return res.json({ response: `[DEBUG ERROR]: ${error.message}` });
   }
 });
 
